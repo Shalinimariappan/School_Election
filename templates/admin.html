@@ -3,9 +3,12 @@
 {% block content %}
 <div class="container">
     <h1 class="text-center mb-4">Election Results Dashboard</h1>
-    
+
     <div class="d-flex justify-content-between mb-4">
-        <a href="/initialize" class="btn btn-warning">Reset Candidates</a>
+        <!-- New: Reset Votes button -->
+        <a href="{{ url_for('reset_votes') }}" class="btn btn-danger">
+            Reset Votes
+        </a>
     </div>
 
     {% for position, candidates in positions.items() %}
@@ -36,7 +39,9 @@
                                 <td>{{ candidate.symbol }}</td>
                                 <td>{{ candidate.code }}</td>
                                 <td>{{ candidate.votes }}</td>
-                                <td>{{ (candidate.votes / total_votes[position] * 100 if total_votes[position] > 0 else 0)|round(1) }}%</td>
+                                <td>
+                                  {{ (candidate.votes / total_votes[position] * 100 if total_votes[position] > 0 else 0)|round(1) }}%
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>

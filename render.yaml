@@ -2,6 +2,6 @@ services:
   - type: web
     name: school-election
     env: python
-    buildCommand: ""
+    pythonVersion: 3.10     # <= pre-built wheels exist for old reportlab
     startCommand: "python app.py"
     plan: free
