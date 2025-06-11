@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center mb-4">Election Results</h1>
+    
+    {% for position, candidates in positions.items() %}
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h3>{{ position }}</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <img src="data:image/png;base64,{{ charts[position] }}" alt="{{ position }} results" class="img-fluid">
+                </div>
+                <div class="col-md-6">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Candidate</th>
+                                <th>Symbol</th>
+                                <th>Votes</th>
+                                <th>Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for candidate in candidates %}
+                            <tr>
+                                <td>{{ candidate.name }}</td>
+                                <td>{{ candidate.symbol }}</td>
+                                <td>{{ candidate.votes }}</td>
+                                <td>{{ (candidate.votes / max(total_votes[position], 1) * 100 | round(1) }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

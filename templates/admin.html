@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center mb-4">Election Results Dashboard</h1>
+    
+    <div class="d-flex justify-content-between mb-4">
+        <a href="/initialize" class="btn btn-warning">Reset Candidates</a>
+    </div>
+
+    {% for position, candidates in positions.items() %}
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h3>{{ position }} Results</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <img src="data:image/png;base64,{{ charts[position] }}" alt="{{ position }} results" class="img-fluid">
+                </div>
+                <div class="col-md-6">
+                    <table class="table table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Candidate</th>
+                                <th>Symbol</th>
+                                <th>Code</th>
+                                <th>Votes</th>
+                                <th>%</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for candidate in candidates %}
+                            <tr>
+                                <td>{{ candidate.name }}</td>
+                                <td>{{ candidate.symbol }}</td>
+                                <td>{{ candidate.code }}</td>
+                                <td>{{ candidate.votes }}</td>
+                                <td>{{ (candidate.votes / total_votes[position] * 100 if total_votes[position] > 0 else 0)|round(1) }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
