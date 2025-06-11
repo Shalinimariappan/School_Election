@@ -8,16 +8,22 @@ import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
 from fpdf import FPDF
-import os  # Added to access environment variables
+import os
+import secrets  # For generating a fallback dev key
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your-secret-key-123'
+
+# ──────────────────────── Config ─────────────────────────
+# Use a persistent secret key from the environment in production.
+# Render ➜  Dashboard ➜  Your Service ➜  Environment ➜  "SECRET_KEY"
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'dev-secret-' + secrets.token_hex(16)
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///election.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+# ──────────────────────── Database ───────────────────────
 db = SQLAlchemy(app)
 
-# ───────────────────────── Models ──────────────────────────
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True)
@@ -32,7 +38,7 @@ class Candidate(db.Model):
     code = db.Column(db.String(20), unique=True, nullable=False)
     votes = db.Column(db.Integer, default=0)
 
-# ──────────────── Create tables & seed data ────────────────
+# ──────────────── Create tables & seed data ───────────────
 with app.app_context():
     db.create_all()
 
@@ -55,7 +61,7 @@ with app.app_context():
         ])
     db.session.commit()
 
-# ───────────────────────── Routes ──────────────────────────
+# ───────────────────────── Routes ─────────────────────────
 @app.route('/')
 def home():
     return redirect(url_for('election'))
@@ -137,7 +143,7 @@ def admin():
         total_votes=total_votes
     )
 
-# ---------- NEW: Reset all votes ----------
+# ---------- Reset all votes ----------
 @app.route('/reset_votes')
 def reset_votes():
     if not session.get('admin_logged_in'):
@@ -174,11 +180,7 @@ def download():
         pdf.cell(0, 8, f'\n{position}', ln=1)
         pdf.set_font('Helvetica', size=12)
         for cand in grouped[position]:
-            pdf.cell(
-                0, 6,
-                f'{cand.name} – {cand.votes} votes',
-                ln=1
-            )
+            pdf.cell(0, 6, f'{cand.name} – {cand.votes} votes', ln=1)
         pdf.ln(1)
 
     tmp = '/tmp/election_results.pdf'
@@ -187,5 +189,7 @@ def download():
 
 # ───────────────────────────────────────────────────────────
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))  # Render.com sets this
-    app.run(host='0.0.0.0', port=port, debug=False)
+    # Render sets $PORT automatically; default to 5000 locally.
+    port = int(os.environ.get('PORT', 5000))
+    # Never enable debug in production by default
+    app.run(host='0.0.0.0', port=port, debug=os.environ.get('FLASK_DEBUG') == '1')
